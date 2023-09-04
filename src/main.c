@@ -493,7 +493,7 @@ int main() {
         }
 
         input(g);
-        collisions(g);
+        if (g->state == 0) collisions(g);
         sprites(g);
         SYS_doVBlankProcess();
 		VDP_waitVSync();
