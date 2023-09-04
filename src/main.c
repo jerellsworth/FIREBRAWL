@@ -290,7 +290,7 @@ void ai(Player *p, Player *op, Entity **particles) {
 
 void input(Game *g) {
     u16 joy;
-    if (g->state == 0 && (g->players)[1]->ctrl_no == 2) {
+    if ((g->players)[1]->ctrl_no == 2) {
         joy = JOY_readJoypad(JOY_2);
         if (joy & BUTTON_START) {
             // player 2 is playing
