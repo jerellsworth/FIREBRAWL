@@ -290,13 +290,11 @@ void ai(Player *p, Player *op, Entity **particles) {
 
 void input(Game *g) {
     u16 joy;
-    if ((g->players)[1]->ctrl_no == 2) {
-        joy = JOY_readJoypad(JOY_2);
-        if (joy & BUTTON_START) {
-            // player 2 is playing
-            XGM_startPlayPCM(68,1,SOUND_PCM_CH3);
-            (g->players)[1]->ctrl_no = 1;
-        }
+    joy = JOY_readJoypad(JOY_2);
+    if (joy & BUTTON_START) {
+        // player 2 is playing
+        XGM_startPlayPCM(68,1,SOUND_PCM_CH3);
+        (g->players)[1]->ctrl_no = 1;
     }
     if (!(g->paused)) {
         Player **players = g->players;
@@ -459,6 +457,7 @@ int main() {
     XGM_setPCM(68, WAV_Ding, sizeof(WAV_Ding));
 
 	SYS_enableInts();
+    JOY_setSupport(PORT_2, JOY_SUPPORT_6BTN);
 
     Game *g = Game_new(2); // 2 is AI, 1 is player
 
