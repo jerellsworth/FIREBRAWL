@@ -3,7 +3,7 @@
 #include <memory.h>
 #include "resources.h"
 
-#define BULLETS_PER_PLAYER 8
+#define BULLETS_PER_PLAYER 2
 #define MAX_PARTICLES 24
 
 #define N_PLAYERS 2
