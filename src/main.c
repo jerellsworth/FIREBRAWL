@@ -253,7 +253,7 @@ void jump(Player *p, Entity **particles) {
     if (p->cooldown_c > 0) {
         return;
     }
-    if (p->jumps > 0) {
+    if (p->jumps > 1) {
         return;
     }
     p->e->dy = 0;
@@ -322,9 +322,9 @@ void input(Game *g) {
             }
             s16 fb_dy = 0;
             if(joy & BUTTON_UP) {
-                fb_dy = -6;
+                fb_dy = -9;
             } else if(joy & BUTTON_DOWN) {
-                fb_dy = 6;
+                fb_dy = 10;
             }
             if (joy & BUTTON_B) {
                 fireball(p, fb_dy);
