@@ -123,7 +123,7 @@ Player *Player_new(
     for (int i = 0; i < START_HEALTH; ++i) {
         (ret->health_notches)[i] = Entity_new(
             &SPR_Health,
-            pal,
+            pal == PAL1 ? PAL3 : pal,
             hx,
             20,
             0
@@ -234,9 +234,10 @@ void fireball(Player *p, s16 dy) {
         // No remaining slots. give up
         return;
     }
+    u8 pal = p->pal == PAL1 ? PAL3 : p->pal;
     Entity *e = Entity_new(
         &SPR_Fireball,
-        p->pal,
+        pal,
         p->e->x,
         p->e->y,
         30);
@@ -446,7 +447,7 @@ int main() {
     PAL_setPalette(PAL0, IMG_BG.palette->data, DMA);
     PAL_setPalette(PAL1, SPR_Cleric.palette->data, DMA);
     PAL_setPalette(PAL2, PAL_CrystalDecay.data, DMA);
-    PAL_setPalette(PAL3, PAL_ZX.data, DMA);
+    PAL_setPalette(PAL3, SPR_Fireball.palette->data, DMA);
 
     XGM_setPCM(64, WAV_FireballFire, sizeof(WAV_FireballFire));
     XGM_setPCM(65, WAV_Boing, sizeof(WAV_Boing));
