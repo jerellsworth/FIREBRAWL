@@ -448,8 +448,6 @@ int main() {
     PAL_setPalette(PAL2, PAL_CrystalDecay.data, DMA);
     PAL_setPalette(PAL3, PAL_ZX.data, DMA);
 
-    VDP_drawImage(VDP_BG_A, &IMG_BG, 0, 0);
-
     XGM_setPCM(64, WAV_FireballFire, sizeof(WAV_FireballFire));
     XGM_setPCM(65, WAV_Boing, sizeof(WAV_Boing));
     XGM_setPCM(66, WAV_Oof, sizeof(WAV_Oof));
@@ -458,6 +456,13 @@ int main() {
 
 	SYS_enableInts();
     JOY_setSupport(PORT_2, JOY_SUPPORT_6BTN);
+
+    VDP_drawImage(BG_A, &IMG_Production, 0, 0);
+    for (int i = 0; i < 90; ++i) {
+        VDP_waitVSync();
+    }
+
+    VDP_drawImage(VDP_BG_A, &IMG_BG, 0, 0);
 
     Game *g = Game_new(2); // 2 is AI, 1 is player
 

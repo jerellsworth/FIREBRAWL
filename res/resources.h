@@ -14,5 +14,6 @@ extern const SpriteDefinition SPR_GO;
 extern const Palette PAL_CrystalDecay;
 extern const Palette PAL_ZX;
 extern const Image IMG_BG;
+extern const Image IMG_Production;
 
 #endif // _RES_RESOURCES_H_

@@ -6,6 +6,7 @@ SPRITE SPR_GO GO.png 16 16
 PALETTE PAL_CrystalDecay crystal-decay-1x.png
 PALETTE PAL_ZX zx-spectrum-1x.png
 IMAGE IMG_BG Maslowski.png
+IMAGE IMG_Production production.png
 WAV WAV_FireballFire snare1.wav 5
 WAV WAV_Boing 140867__juskiddink__boing.wav 5
 WAV WAV_Oof 438912__thedavedude__homemadeoof.wav 5
