@@ -23,6 +23,7 @@ typedef struct {
     s16 ddx, ddy;
     s8 facing;
     s16 ttl;
+    bool ai_solved;
 } Entity;
 
 Entity *Entity_new(
@@ -47,6 +48,7 @@ Entity *Entity_new(
     ret->ddy = 0;
     ret->facing = 1;
     ret->ttl = ttl;
+    ret->ai_solved = FALSE;
     return ret;
 }
 
@@ -265,7 +267,55 @@ void jump(Player *p, Entity **particles) {
     XGM_startPlayPCM(65,1,SOUND_PCM_CH3);
 }
 
+bool will_collide(Entity *e1, Entity *e2) {
+    Entity g1, g2;
+    g1.x = e1->x;
+    g1.y = e1->y;
+    g2.x = e2->x;
+    g2.y = e2->y;
+    for (int ts = 0; ts < 8; ++ts) {
+        g1.x += e1->dx;
+        g1.y += e1->dy;
+        g2.x += e2->dx;
+        g2.y += e2->dy;
+        if (Entity_collide(g1, g2)) return TRUE;
+    }
+    return FALSE;
+}
+
 void ai(Player *p, Player *op, Entity **particles) {
+    for (int i = 0; i < BULLETS_PER_PLAYER; ++i) {
+        Entity *b = op->bullets[i];
+        if (!b) continue;
+        if (b->ai_solved) continue;
+        if (!will_collide(p->e, b)) {
+            b->ai_solved = TRUE;
+            continue;
+        }
+        if (fireball_available()) {// TODO
+            s16 dy;
+            if (b->y < p->e->y) {
+                dy = 6;
+            } else if (b->y == p->e->y) {
+                dy = 0;
+            } else {
+                dy = -6;
+            }
+            Entity ghost_fb;
+            ghost_fb.x = p->e->x;
+            ghost_fb.y = p->e->y;
+            ghost_fb.dx = 10 * p->e->facing;
+            ghost_fb.dy = dy;
+            if (will_collide(ghost_fb, b)) {
+                fireball(p, dy);
+                b->ai_solved = TRUE;
+                continue
+            }
+        }
+        // TODO avoid by moving
+    }
+    // TODO aggression
+    
     if (p->e->dx == 0) {
         p->e->dx = 4;
     }
