@@ -9,9 +9,9 @@ const ROMHeader rom_header = {
 #else
     "SEGA MEGA DRIVE ",
 #endif
-    "(C)SGDK 2023    ",
-    "SAMPLE PROGRAM                                  ",
-    "SAMPLE PROGRAM                                  ",
+    "                ",
+    "FIREBRAWL                                       ",
+    "FIREBRAWL                                       ",
     "GM 00000000-00",
     0x000,
     "JD              ",
@@ -28,6 +28,6 @@ const ROMHeader rom_header = {
     0x00200000,
     0x0020FFFF,
     "            ",
-    "DEMONSTRATION PROGRAM                   ",
+    "FIREBRAWL                               ",
     "JUE             "
 };

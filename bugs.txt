@@ -1,2 +1,0 @@
-* itch
-* rom header
