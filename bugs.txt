@@ -1,4 +1,2 @@
-* title screen for random seed
-* press 1 or 2 player start
 * itch
 * rom header

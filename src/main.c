@@ -580,6 +580,7 @@ int main() {
     u8 p2_ctrl_no;
     VDP_drawImage(BG_A, &IMG_Title, 0, 0);
     while (TRUE) {
+        random();
         SYS_doVBlankProcess();
         if (JOY_readJoypad(JOY_1) & BUTTON_START) {
             p2_ctrl_no = 2;
