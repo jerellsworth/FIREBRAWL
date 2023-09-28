@@ -553,6 +553,7 @@ void sprites(Game *g) {
 
 int main() {
 
+    JOY_init();
     SPR_init();
 	SYS_disableInts();
 
@@ -568,16 +569,32 @@ int main() {
     XGM_setPCM(68, WAV_Ding, sizeof(WAV_Ding));
 
 	SYS_enableInts();
-    JOY_setSupport(PORT_2, JOY_SUPPORT_6BTN);
 
+    // production screen
     VDP_drawImage(BG_A, &IMG_Production, 0, 0);
     for (int i = 0; i < 90; ++i) {
         VDP_waitVSync();
     }
 
+    // title screen
+    u8 p2_ctrl_no;
+    VDP_drawImage(BG_A, &IMG_Title, 0, 0);
+    while (TRUE) {
+        SYS_doVBlankProcess();
+        if (JOY_readJoypad(JOY_1) & BUTTON_START) {
+            p2_ctrl_no = 2;
+            break;
+        }
+        if (JOY_readJoypad(JOY_2) & BUTTON_START) {
+            p2_ctrl_no = 1;
+            break;
+        }
+        VDP_waitVSync();
+    }
+
     VDP_drawImage(VDP_BG_A, &IMG_BG, 0, 0);
 
-    Game *g = Game_new(2); // 2 is AI, 1 is player
+    Game *g = Game_new(p2_ctrl_no); // 2 is AI, 1 is player
 
 	while(TRUE) {
         if (g->state == 1) {
@@ -603,7 +620,7 @@ int main() {
         } else if (g->state == 2) {
             g->timer -= 1;
             if (g->timer == 0) {
-                u8 p2_ctrl_no = (g->players)[1]->ctrl_no;
+                p2_ctrl_no = (g->players)[1]->ctrl_no;
                 Game_del(g);
                 g = Game_new(p2_ctrl_no);
             }

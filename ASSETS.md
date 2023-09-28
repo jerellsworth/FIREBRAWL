@@ -41,3 +41,6 @@ https://freesound.org/people/Legnalegna55/sounds/547344/
 https://freesound.org/people/InspectorJ/sounds/484344/
 "Bike, Bell Ding, Single, 01-01.wav" by InspectorJ (www.jshaw.co.uk) of Freesound.org
 
+# Fonts
+
+Title font is "Crackling Fire" by David Rakowski (https://www.1001fonts.com/cracklingfire-font.html)
