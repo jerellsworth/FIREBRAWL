@@ -77,13 +77,6 @@ Entity *Entity_update(Entity *e) {
     e->dy += e->ddy;
     e->x += e->dx;
     e->y += e->dy;
-    if ((e->dx < 0) && (e->facing == 1)) {
-        e->facing = -1;
-        SPR_setHFlip(e->sprite, TRUE);
-    } else if ((e->dx > 0) && (e->facing == -1)) {
-        e->facing = 1;
-        SPR_setHFlip(e->sprite, FALSE);
-    }
     SPR_setPosition(e->sprite, e->x, e->y);
     return e;
 }
@@ -257,7 +250,7 @@ void fireball(Player *p, s16 dy) {
     e->dx = 10 * p->e->facing;
     e->dy = dy;
     bullets[i] = e;
-    p->cooldown_b = 5;
+    p->cooldown_b = 30;
     p->anim_frames=10;
     SPR_setAnimAndFrame(p->e->sprite, 3, 3);
     XGM_startPlayPCM(64,1,SOUND_PCM_CH2);
@@ -284,9 +277,9 @@ bool will_collide(Entity *e1, Entity *e2) {
     g1.y = e1->y;
     g2.x = e2->x;
     g2.y = e2->y;
-    for (int ts = 0; ts < 16; ++ts) {
-        g1.x += e1->dx;
-        g1.y += e1->dy;
+    for (int ts = 0; ts < 32; ++ts) {
+        //g1.x += e1->dx;
+        //g1.y += e1->dy;
         g2.x += e2->dx;
         g2.y += e2->dy;
         if (Entity_collide(&g1, &g2)) return TRUE;
@@ -295,6 +288,7 @@ bool will_collide(Entity *e1, Entity *e2) {
 }
 
 bool fireball_available(Player *p) {
+    if (p->cooldown_b > 0) return FALSE;
     for (int i = 0; i < BULLETS_PER_PLAYER; ++i) {
         Entity *b = p->bullets[i];
         if (!b) return TRUE;
@@ -303,7 +297,8 @@ bool fireball_available(Player *p) {
 }
 
 void ai(Player *p, Player *op, Entity **particles) {
-    bool jumped;
+    p->e->dx = 0;
+    bool jumped = FALSE;
     for (int i = 0; i < BULLETS_PER_PLAYER; ++i) {
         Entity *b = op->bullets[i];
         if (!b) continue;
@@ -332,9 +327,10 @@ void ai(Player *p, Player *op, Entity **particles) {
                 continue;
             }
         }
-        if (b->dy == 0 && (!jumped)) {
+        if (b->dy == 0 && (!jumped) && abs(p->e->x - b->x) <= 128) {
             jump(p, particles);
             jumped = TRUE;
+            b->ai_solved = TRUE;
         }
         if (p->ai_state == AI_ATTACK) {
             if (p->e->x >= op->e->x && p->e->x > X_MIN) {
@@ -349,9 +345,7 @@ void ai(Player *p, Player *op, Entity **particles) {
                 p->e->dx = -4;
             }
         }
-        b->ai_solved = TRUE;
     }
-    return;
     if (fireball_available(p)) {
         if (
             (p->ai_state == AI_ATTACK && random() < 10000) ||
@@ -388,7 +382,7 @@ void ai(Player *p, Player *op, Entity **particles) {
         jump(p, particles);
     }
     p->ai_state_frames += 1;
-    if (p->ai_state_frames > random() >> 8) {
+    if (p->ai_state_frames > random() >> 7) {
         p->ai_state_frames = 0;
         p->ai_state = !p->ai_state;
     }
@@ -537,6 +531,19 @@ void sprites(Game *g) {
         for (int hi = 0; hi < START_HEALTH; ++hi) {
             health_notches[hi] = Entity_update(health_notches[hi]);
         }
+    }
+    Player *p = players[0];
+    Player *op = players[1];
+    if (p->e->x >= op->e->x) {
+        p->e->facing = -1;
+        SPR_setHFlip(p->e->sprite, TRUE);
+        op->e->facing = 1;
+        SPR_setHFlip(op->e->sprite, FALSE);
+    } else {
+        p->e->facing = 1;
+        SPR_setHFlip(p->e->sprite, FALSE);
+        op->e->facing = -1;
+        SPR_setHFlip(op->e->sprite, TRUE);
     }
     for (int i = 0; i < MAX_PARTICLES; ++i) {
         (g->particles)[i] = Entity_update((g->particles)[i]);
