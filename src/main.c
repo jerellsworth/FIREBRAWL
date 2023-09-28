@@ -26,6 +26,8 @@ typedef struct {
     bool ai_solved;
 } Entity;
 
+bool Entity_collide(Entity *e1, Entity *e2);
+
 Entity *Entity_new(
     const SpriteDefinition *spriteDef,
     u8 pal,
@@ -86,6 +88,11 @@ Entity *Entity_update(Entity *e) {
     return e;
 }
 
+typedef enum {
+    AI_ATTACK,
+    AI_DEFEND
+} AI_State;
+
 typedef struct {
     u8 player_no;
     u8 ctrl_no;
@@ -98,6 +105,8 @@ typedef struct {
     u8 pal;
     u8 health;
     Entity *health_notches[START_HEALTH];
+    AI_State ai_state;
+    u16 ai_state_frames;
 } Player;
 
 Player *Player_new(
@@ -121,6 +130,8 @@ Player *Player_new(
     ret->anim_frames = 0;
     ret->pal = pal;
     ret->health = START_HEALTH;
+    ret->ai_state = AI_ATTACK;
+    ret->ai_state_frames = 0;
     s16 hx = player_no * 150;
     for (int i = 0; i < START_HEALTH; ++i) {
         (ret->health_notches)[i] = Entity_new(
@@ -273,17 +284,26 @@ bool will_collide(Entity *e1, Entity *e2) {
     g1.y = e1->y;
     g2.x = e2->x;
     g2.y = e2->y;
-    for (int ts = 0; ts < 8; ++ts) {
+    for (int ts = 0; ts < 16; ++ts) {
         g1.x += e1->dx;
         g1.y += e1->dy;
         g2.x += e2->dx;
         g2.y += e2->dy;
-        if (Entity_collide(g1, g2)) return TRUE;
+        if (Entity_collide(&g1, &g2)) return TRUE;
+    }
+    return FALSE;
+}
+
+bool fireball_available(Player *p) {
+    for (int i = 0; i < BULLETS_PER_PLAYER; ++i) {
+        Entity *b = p->bullets[i];
+        if (!b) return TRUE;
     }
     return FALSE;
 }
 
 void ai(Player *p, Player *op, Entity **particles) {
+    bool jumped;
     for (int i = 0; i < BULLETS_PER_PLAYER; ++i) {
         Entity *b = op->bullets[i];
         if (!b) continue;
@@ -292,50 +312,85 @@ void ai(Player *p, Player *op, Entity **particles) {
             b->ai_solved = TRUE;
             continue;
         }
-        if (fireball_available()) {// TODO
+        if (fireball_available(p)) {
             s16 dy;
             if (b->y < p->e->y) {
-                dy = 6;
+                dy = -6;
             } else if (b->y == p->e->y) {
                 dy = 0;
             } else {
-                dy = -6;
+                dy = 6;
             }
             Entity ghost_fb;
             ghost_fb.x = p->e->x;
             ghost_fb.y = p->e->y;
             ghost_fb.dx = 10 * p->e->facing;
             ghost_fb.dy = dy;
-            if (will_collide(ghost_fb, b)) {
+            if (will_collide(&ghost_fb, b)) {
                 fireball(p, dy);
                 b->ai_solved = TRUE;
-                continue
+                continue;
             }
         }
-        // TODO avoid by moving
+        if (b->dy == 0 && (!jumped)) {
+            jump(p, particles);
+            jumped = TRUE;
+        }
+        if (p->ai_state == AI_ATTACK) {
+            if (p->e->x >= op->e->x && p->e->x > X_MIN) {
+                p->e->dx = -4;
+            } else if (p->e->x <= op->e->x && p->e->x < X_MAX) {
+                p->e->dx = 4;
+            }
+        } else if (p->ai_state == AI_DEFEND) {
+            if (p->e->x >= op->e->x && op->e->x < X_MAX) {
+                p->e->dx = 4;
+            } else if (p->e->x <= op->e->x && p->e->x > X_MIN) {
+                p->e->dx = -4;
+            }
+        }
+        b->ai_solved = TRUE;
     }
-    // TODO aggression
-    
+    return;
+    if (fireball_available(p)) {
+        if (
+            (p->ai_state == AI_ATTACK && random() < 10000) ||
+            (p->ai_state == AI_DEFEND && random() < 5000)
+            ) {
+            s16 dy;
+            if (op->e->y < p->e->y) {
+                dy = -6;
+            } else if (op->e->y == p->e->y) {
+                dy = 0;
+            } else {
+                dy = 6;
+            }
+            fireball(p, dy);
+        } 
+    }
     if (p->e->dx == 0) {
-        p->e->dx = 4;
+        if (p->ai_state == AI_ATTACK) {
+            if (p->e->x >= op->e->x + 4 && p->e->x > X_MIN) {
+                p->e->dx = -4;
+            } else if (p->e->x <= op->e->x - 4 && p->e->x < X_MAX) {
+                p->e->dx = 4;
+            }
+        } else if (p->ai_state == AI_DEFEND) {
+            if (p->e->x >= op->e->x && p->e->x < X_MAX) {
+                p->e->dx = 4;
+            } else if (p->e->x <= op->e->x && p->e->x > X_MIN) {
+                p->e->dx = -4;
+            }
+        }
     }
-    if (p->e->x >= X_MAX) {
-        p->e->dx = -4;
-    }
-    if (p->e->x < 10) {
-        p->e->dx = 4;
-    }
-    if (random() < 4048) {
+    
+    if (random() < 4048 && (!jumped)) {
         jump(p, particles);
     }
-    if (random() < 4048) {
-        s16 dy = 0;
-        if (op->e->y > p->e->y) {
-            dy = 6;
-        } else if (op->e->y < p->e->y) {
-            dy = -6;
-        }
-        fireball(p, dy);
+    p->ai_state_frames += 1;
+    if (p->ai_state_frames > random() >> 8) {
+        p->ai_state_frames = 0;
+        p->ai_state = !p->ai_state;
     }
 }
 
